@@ -4,12 +4,14 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-fastapi = "*"
-black = "*"
 uvicorn = "*"
-pydantic = {extras = ["email"], version = "*"}
-sqlalchemy = "*"
+fastapi = "*"
+pydantic = "*"
+motor = "*"
+black = "*"
 python-multipart = "*"
+python-jose = {extras = ["cryptography"], version = "*"}
+passlib = {extras = ["bcrypt"], version = "*"}
 
 [dev-packages]
 
