@@ -1,0 +1,6 @@
+from .base import AsyncIOMotorClient
+from ..core.config import CITY_COLLECTION
+
+
+async def get_all_cities(conn: AsyncIOMotorClient) -> list:
+    return await conn[CITY_COLLECTION].find().to_list(length=100)

@@ -12,6 +12,7 @@ black = "*"
 python-multipart = "*"
 python-jose = {extras = ["cryptography"], version = "*"}
 passlib = {extras = ["bcrypt"], version = "*"}
+pymongo = {extras = ["srv"], version = "*"}
 
 [dev-packages]
 

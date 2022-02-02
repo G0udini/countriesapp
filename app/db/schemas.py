@@ -1,12 +1,11 @@
 import uuid
 
 from pydantic import BaseModel, Field
-from pydantic.dataclasses import dataclass
 
 
 SIGHT_EXAMPLE = {
     "name": "Red Square",
-    "location": "55°45N 37°37E",
+    "location": ["55°45N", "37°37E"],
     "description": (
         "Red Square is the main square of Moscow and the most visited place in the capital of Russia."
         "The most famous Moscow sights, such as the Moscow Kremlin and St. Basil's Cathedral are located near Red Square."
@@ -64,24 +63,27 @@ class FullCityConfig(BaseCityConfig):
     schema_extra = {"example": CITY_EXAMPLE_WITH_ID}
 
 
-@dataclass(config=InputSightConfig)
+class DBModelMixin:
+    id: str = Field(default_factory=uuid.uuid4, alias="_id")
+
+
 class BaseSight(BaseModel):
     name: str = Field(...)
-    locatoin: tuple[int, int] = Field(...)
+    locatoin: list[str, str] = Field(...)
     description: str = Field(...)
     visited: int = 0
 
 
 class InputSight(BaseSight):
-    pass
+    class Config(InputSightConfig):
+        pass
 
 
-@dataclass(config=FullSightConfig)
-class FullSight(BaseSight):
-    id: str = Field(default_factory=uuid.uuid4, alias="_id")
+class FullSight(BaseSight, DBModelMixin):
+    class Config(FullSightConfig):
+        pass
 
 
-@dataclass(config=ViewCityConfig)
 class BaseCity(BaseModel):
     name: str = Field(...)
     description: str = Field(...)
@@ -100,6 +102,6 @@ class ViewCity(BaseCity):
         pass
 
 
-@dataclass(config=FullCityConfig)
-class FullCity(BaseCity):
-    id: str = Field(default_factory=uuid.uuid4, alias="_id")
+class FullCity(BaseCity, DBModelMixin):
+    class Config(FullCityConfig):
+        pass
