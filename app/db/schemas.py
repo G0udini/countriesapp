@@ -1,10 +1,11 @@
 import uuid
 
 from pydantic import BaseModel, Field
-
+from bson import ObjectId
 
 SIGHT_EXAMPLE = {
     "name": "Red Square",
+    "slug": "red-square",
     "location": ["55°45N", "37°37E"],
     "description": (
         "Red Square is the main square of Moscow and the most visited place in the capital of Russia."
@@ -15,10 +16,11 @@ SIGHT_EXAMPLE = {
     "visited": 10,
 }
 
-SIGHT_EXAMPLE_WITH_ID = SIGHT_EXAMPLE | {"id": "66a7d114-e178-4103-aac3-3e4ce0f56a2c"}
+SIGHT_EXAMPLE_WITH_ID = SIGHT_EXAMPLE | {"_id": "61f9a0a8485011106d5aa394"}
 
 CITY_EXAMPLE = {
     "name": "Moscow",
+    "slug": "moscow",
     "description": (
         "Moscow is the capital of Russia, its political, economic, and cultural centre."
         "This is the most populated city in Russia and Europe."
@@ -34,7 +36,19 @@ CITY_EXAMPLE = {
     "reviews": [],
 }
 
-CITY_EXAMPLE_WITH_ID = CITY_EXAMPLE | {"id": "ed3a8ab8-e9fe-472a-86c8-b4029de37e35"}
+CITY_EXAMPLE_WITH_ID = CITY_EXAMPLE | {"_id": "61f9a0a8485011106d5aa394"}
+
+
+class ObjectIdStr(str):
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
+
+    @classmethod
+    def validate(cls, val):
+        if not isinstance(val, ObjectId):
+            raise ValueError("Not a valid ObjectId")
+        return str(val)
 
 
 class BaseSightConfig:
@@ -63,12 +77,13 @@ class FullCityConfig(BaseCityConfig):
     schema_extra = {"example": CITY_EXAMPLE_WITH_ID}
 
 
-class DBModelMixin:
-    id: str = Field(default_factory=uuid.uuid4, alias="_id")
+class DBModelMixin(BaseModel):
+    id: ObjectIdStr = Field(alias="_id")
 
 
 class BaseSight(BaseModel):
     name: str = Field(...)
+    slug: str
     locatoin: list[str, str] = Field(...)
     description: str = Field(...)
     visited: int = 0
@@ -79,13 +94,14 @@ class InputSight(BaseSight):
         pass
 
 
-class FullSight(BaseSight, DBModelMixin):
+class FullSight(DBModelMixin, BaseSight):
     class Config(FullSightConfig):
         pass
 
 
 class BaseCity(BaseModel):
     name: str = Field(...)
+    slug: str
     description: str = Field(...)
     foundation_year: int | None = None
     time_zone: int | None = None
@@ -102,6 +118,6 @@ class ViewCity(BaseCity):
         pass
 
 
-class FullCity(BaseCity, DBModelMixin):
+class FullCity(DBModelMixin, BaseCity):
     class Config(FullCityConfig):
         pass
