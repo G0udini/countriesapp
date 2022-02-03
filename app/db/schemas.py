@@ -5,7 +5,6 @@ from bson import ObjectId
 
 SIGHT_EXAMPLE = {
     "name": "Red Square",
-    "slug": "red-square",
     "location": ["55°45N", "37°37E"],
     "description": (
         "Red Square is the main square of Moscow and the most visited place in the capital of Russia."
@@ -16,11 +15,13 @@ SIGHT_EXAMPLE = {
     "visited": 10,
 }
 
-SIGHT_EXAMPLE_WITH_ID = SIGHT_EXAMPLE | {"_id": "61f9a0a8485011106d5aa394"}
+FULL_SIGHT_EXAMPLE = {
+    "_id": "61f9a0a8485011106d5aa394",
+    "slug": "red-square",
+} | SIGHT_EXAMPLE
 
 CITY_EXAMPLE = {
     "name": "Moscow",
-    "slug": "moscow",
     "description": (
         "Moscow is the capital of Russia, its political, economic, and cultural centre."
         "This is the most populated city in Russia and Europe."
@@ -36,7 +37,10 @@ CITY_EXAMPLE = {
     "reviews": [],
 }
 
-CITY_EXAMPLE_WITH_ID = CITY_EXAMPLE | {"_id": "61f9a0a8485011106d5aa394"}
+FULL_CITY_EXAMPLE = {
+    "_id": "61f9a0a8485011106d5aa394",
+    "slug": "moscow",
+} | CITY_EXAMPLE
 
 
 class ObjectIdStr(str):
@@ -61,7 +65,7 @@ class InputSightConfig(BaseSightConfig):
 
 class FullSightConfig(BaseSightConfig):
     allow_population_by_field_name = True
-    schema_extra = {"example": SIGHT_EXAMPLE_WITH_ID}
+    schema_extra = {"example": FULL_SIGHT_EXAMPLE}
 
 
 class BaseCityConfig:
@@ -74,16 +78,16 @@ class ViewCityConfig(BaseCityConfig):
 
 class FullCityConfig(BaseCityConfig):
     allow_population_by_field_name = True
-    schema_extra = {"example": CITY_EXAMPLE_WITH_ID}
+    schema_extra = {"example": FULL_CITY_EXAMPLE}
 
 
 class DBModelMixin(BaseModel):
     id: ObjectIdStr = Field(alias="_id")
+    slug: str
 
 
 class BaseSight(BaseModel):
     name: str = Field(...)
-    slug: str
     locatoin: list[str, str] = Field(...)
     description: str = Field(...)
     visited: int = 0
@@ -101,7 +105,6 @@ class FullSight(DBModelMixin, BaseSight):
 
 class BaseCity(BaseModel):
     name: str = Field(...)
-    slug: str
     description: str = Field(...)
     foundation_year: int | None = None
     time_zone: int | None = None
