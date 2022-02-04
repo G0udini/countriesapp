@@ -1,6 +1,6 @@
 from .base import AsyncIOMotorClient
 from ..core.config import CITY_COLLECTION
-from .schemas import FullCity, ViewCity
+from .schemas import FullCity, ViewCity, UpdateCity
 
 import pymongo
 from slugify import slugify
@@ -37,12 +37,14 @@ async def insert_city_and_return(conn: AsyncIOMotorClient, document: ViewCity):
 
 
 async def update_city_and_return(
-    conn: AsyncIOMotorClient, slug: str, document: ViewCity
+    conn: AsyncIOMotorClient, slug: str, document: UpdateCity
 ):
-    city_doc = document.dict()
-    city_doc["slug"] = slugify(city_doc["name"])
-    await conn[CITY_COLLECTION].update_one({"slug": slug}, {"$set": city_doc})
-    return city_doc
+    city_doc = document.dict(exclude_unset=True)
+    if "name" in city_doc:
+        city_doc["slug"] = slugify(city_doc["name"])
+    return await conn[CITY_COLLECTION].find_one_and_update(
+        {"slug": slug}, {"$set": city_doc}, return_document=pymongo.ReturnDocument.AFTER
+    )
 
 
 async def delete_city_and_return(conn: AsyncIOMotorClient, slug: str):

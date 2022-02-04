@@ -1,7 +1,7 @@
 from fastapi import Body, FastAPI, HTTPException, Path, Query, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 
-from .db.schemas import ViewCity, FullCity, InputSight, FullSight
+from .db.schemas import ViewCity, FullCity, InputSight, FullSight, UpdateCity
 from .db.crud import (
     get_all_cities,
     get_city_by_slug,
@@ -75,7 +75,7 @@ async def get_city(slug: str = Path(..., min_length=1)):
     tags=["city"],
 )
 async def update_city(
-    slug: str = Path(..., min_length=1), document: ViewCity = Body(...)
+    slug: str = Path(..., min_length=1), document: UpdateCity = Body(...)
 ):
     city = await update_city_and_return(conn=app.mongodb, slug=slug, document=document)
     if city is not None:
