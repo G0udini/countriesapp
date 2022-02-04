@@ -86,41 +86,51 @@ class DBModelMixin(BaseModel):
     slug: str
 
 
-class BaseSight(BaseModel):
+class DBRequiredMixin(BaseModel):
     name: str = Field(...)
-    locatoin: list[str, str] = Field(...)
     description: str = Field(...)
+
+
+class BaseSight(BaseModel):
+    name: str | None = None
+    description: str | None = None
+    locatoin: list[str, str] | None = None
     visited: int = 0
 
 
-class InputSight(BaseSight):
+class InputSight(DBRequiredMixin, BaseSight):
     class Config(InputSightConfig):
         pass
 
 
-class FullSight(DBModelMixin, BaseSight):
+class FullSight(DBRequiredMixin, DBModelMixin, BaseSight):
     class Config(FullSightConfig):
         pass
 
 
 class BaseCity(BaseModel):
-    name: str = Field(...)
-    description: str = Field(...)
+    name: str | None = None
+    description: str | None = None
     foundation_year: int | None = None
     time_zone: int | None = None
     square: float | None = None
     climate: str | None = None
-    rating: float | None = None
+    rating: float | None = Field(None, ge=0, le=5)
     number_of_scores: int = 0
     sights: list[FullSight] = []
     reviews: list[str] = []
 
 
-class ViewCity(BaseCity):
+class ViewCity(DBRequiredMixin, BaseCity):
     class Config(ViewCityConfig):
         pass
 
 
-class FullCity(DBModelMixin, BaseCity):
+class FullCity(DBRequiredMixin, DBModelMixin, BaseCity):
     class Config(FullCityConfig):
+        pass
+
+
+class UpdateCity(BaseCity):
+    class Config(ViewCityConfig):
         pass
