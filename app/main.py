@@ -1,7 +1,7 @@
-from fastapi import Body, FastAPI, HTTPException, Path, Query, Request, status
+from fastapi import Body, FastAPI, HTTPException, Path, Query, status
 from fastapi.middleware.cors import CORSMiddleware
 
-from .db.schemas import ViewCity, FullCity, InputSight, FullSight, UpdateCity
+from .db.schemas import ViewCity, UpdateCity, InputSight, FullSight
 from .db.crud import (
     get_all_cities,
     get_city_by_slug,
@@ -39,13 +39,16 @@ async def shutdown_db_client():
     response_description="List all cities",
     tags=["city"],
 )
-async def list_all_cities(limit: int = Query(20, gt=0), skip: int = Query(0, ge=0)):
-    return await get_all_cities(conn=app.mongodb, limit=limit, skip=skip)
+async def list_all_cities(
+    limit: int = Query(20, gt=0), skip: int = Query(0, ge=0), search: str = Query(None)
+):
+    return await get_all_cities(conn=app.mongodb, limit=limit, skip=skip, search=search)
 
 
 @app.post(
     "/api/cities",
-    response_model=FullCity,
+    response_model=ViewCity,
+    status_code=status.HTTP_201_CREATED,
     response_description="Add new city",
     tags=["city"],
 )
@@ -61,11 +64,11 @@ async def add_city(document: ViewCity = Body(...)):
 )
 async def get_city(slug: str = Path(..., min_length=1)):
     city = await get_city_by_slug(conn=app.mongodb, slug=slug)
-    if city is not None:
-        return city
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND, detail=f"City {slug} not found"
-    )
+    if not city:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"City {slug} not found"
+        )
+    return city
 
 
 @app.put(
@@ -78,20 +81,26 @@ async def update_city(
     slug: str = Path(..., min_length=1), document: UpdateCity = Body(...)
 ):
     city = await update_city_and_return(conn=app.mongodb, slug=slug, document=document)
-    if city is not None:
-        return city
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND, detail=f"City {slug} not found"
-    )
+    if not city:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"City {slug} not found"
+        )
+    return city
 
 
 @app.delete(
     "/api/city/{slug}/",
+    response_model=ViewCity,
     response_description="Delete city",
     tags=["city"],
 )
 async def delete_city(slug: str = Path(..., min_length=1)):
-    await delete_city_and_return(conn=app.mongodb, slug=slug)
+    city = await delete_city_and_return(conn=app.mongodb, slug=slug)
+    if not city:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"City {slug} not found"
+        )
+    return city
 
 
 @app.get(
@@ -102,23 +111,3 @@ async def delete_city(slug: str = Path(..., min_length=1)):
 )
 async def get_city_rating(limit: int = Query(20, gt=0), skip: int = Query(0, ge=0)):
     return await get_cities_by_rating(conn=app.mongodb, limit=limit, skip=skip)
-
-
-# @app.get("/api/todo/{id}", response_model=ResponseTodo)
-# async def get_todo_by_id(id: int):
-#     pass
-
-
-# @app.post("/api/todo/", response_model=ResponseTodo)
-# async def post_todo():
-#     pass
-
-
-# @app.put("/api/todo/{id}", response_model=ResponseTodo)
-# async def update_todo(id: int, data: dict):
-#     pass
-
-
-# @app.delete("/api/todo/{id}", response_model=ResponseTodo)
-# async def delete_todo(id: int):
-#     pass
