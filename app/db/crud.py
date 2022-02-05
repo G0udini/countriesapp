@@ -8,8 +8,22 @@ from bson import ObjectId
 
 
 async def get_all_cities(
-    conn: AsyncIOMotorClient, limit: int, skip: int
-) -> list[ViewCity]:
+    conn: AsyncIOMotorClient, limit: int, skip: int, search: str | None
+) -> list:
+    if search:
+        return (
+            await conn[CITY_COLLECTION]
+            .find(
+                {
+                    "$or": [
+                        {"name": {"$regex": search, "$options": "i"}},
+                        {"description": {"$regex": search, "$options": "i"}},
+                    ]
+                },
+                skip=skip,
+            )
+            .to_list(length=limit)
+        )
     return await conn[CITY_COLLECTION].find(skip=skip).to_list(length=limit)
 
 
