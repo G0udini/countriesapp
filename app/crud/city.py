@@ -1,6 +1,6 @@
-from .base import AsyncIOMotorClient
+from ..db.base import AsyncIOMotorClient
 from ..core.config import CITY_COLLECTION
-from .schemas import ViewCity, UpdateCity
+from ..models.city import ViewCity, UpdateCity
 
 import pymongo
 from slugify import slugify
