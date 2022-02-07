@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 from .db.base import create_connection
 from .api.api_v1.api import router
 

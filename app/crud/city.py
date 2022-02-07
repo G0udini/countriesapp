@@ -1,9 +1,9 @@
-from ..db.base import AsyncIOMotorClient
-from ..models.city import ViewCity, UpdateCity
-
 import pymongo
 from slugify import slugify
 from bson import ObjectId
+
+from ..db.base import AsyncIOMotorClient
+from ..models.city import ViewCity, UpdateCity
 
 
 async def get_all_cities(
