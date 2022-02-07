@@ -19,3 +19,5 @@ if not DATABASE_URL:
 DATABASE_NAME = os.getenv("MONGO_DB")
 
 CITY_COLLECTION = "city"
+
+CITY_TEST_COLLECTION = "test_city"
