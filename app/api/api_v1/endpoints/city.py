@@ -9,6 +9,7 @@ from fastapi import (
     status,
 )
 from motor.motor_asyncio import AsyncIOMotorCollection
+from pymongo.errors import DuplicateKeyError
 
 from ....core.config import CITY_COLLECTION
 from ....crud.city import (
@@ -59,7 +60,14 @@ async def add_city(
     document: ViewCity = Body(...),
     client: AsyncIOMotorCollection = Depends(get_mongodb_conn_for_city),
 ):
-    return await insert_city_and_return(client=client, document=document)
+    try:
+        res = await insert_city_and_return(client=client, document=document)
+    except DuplicateKeyError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"City '{document.name}' already exists",
+        )
+    return res
 
 
 @router.get(
@@ -115,7 +123,7 @@ async def delete_city(
 
 
 @router.get(
-    "/top",
+    "/top/",
     response_model=list[ViewCity],
     response_description="Get the most rated cities",
 )

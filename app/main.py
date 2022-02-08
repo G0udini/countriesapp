@@ -7,6 +7,8 @@ from .api.api_v1.api import router
 app = FastAPI()
 app.include_router(router)
 
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
