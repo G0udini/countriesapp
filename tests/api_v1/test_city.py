@@ -77,7 +77,7 @@ def test_get_nonexistent_city():
     with TestClient(app) as client:
         response = client.get("/api1/cities/mmoscow")
         assert response.status_code == 404
-        assert response.json()["detail"] == "City mmoscow not found"
+        assert response.json()["detail"] == "City mmoscow was not found"
 
 
 def test_update_city():
@@ -93,7 +93,7 @@ def test_update_nonexistent_city():
     with TestClient(app) as client:
         response = client.put("/api1/cities/mmoscow", json={"time_zone": 5})
         assert response.status_code == 404
-        assert response.json()["detail"] == "City mmoscow not found"
+        assert response.json()["detail"] == "City mmoscow was not found"
 
 
 def test_delete_city():
@@ -108,7 +108,7 @@ def test_delete_nonexistent_city():
     with TestClient(app) as client:
         response = client.delete("/api1/cities/mmoscow")
         assert response.status_code == 404
-        assert response.json()["detail"] == "City mmoscow not found"
+        assert response.json()["detail"] == "City mmoscow was not found"
 
 
 def test_get_city_rating():

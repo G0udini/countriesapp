@@ -21,6 +21,7 @@ from ....crud.city import (
     get_cities_by_rating,
 )
 from ....models.city import ViewCity, UpdateCity
+from ...shortcuts import ADDITIONAL_CONFLICT_SCHEMA, ADDITIONAL_NOT_FOUND_SCHEMA
 
 router = APIRouter(
     prefix="/cities",
@@ -55,6 +56,7 @@ async def list_all_cities(
     response_model=ViewCity,
     status_code=status.HTTP_201_CREATED,
     response_description="Add new city",
+    responses=ADDITIONAL_CONFLICT_SCHEMA,
 )
 async def add_city(
     document: ViewCity = Body(...),
@@ -74,6 +76,7 @@ async def add_city(
     "/{slug}",
     response_model=ViewCity,
     response_description="Get city",
+    responses=ADDITIONAL_NOT_FOUND_SCHEMA,
 )
 async def get_city(
     slug: str = Path(..., min_length=1),
@@ -82,7 +85,7 @@ async def get_city(
     city = await get_city_by_slug(client=client, slug=slug)
     if not city:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=f"City {slug} not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"City {slug} was not found"
         )
     return city
 
@@ -91,6 +94,7 @@ async def get_city(
     "/{slug}",
     response_model=ViewCity,
     response_description="Update city",
+    responses=ADDITIONAL_NOT_FOUND_SCHEMA,
 )
 async def update_city(
     slug: str = Path(..., min_length=1),
@@ -100,7 +104,7 @@ async def update_city(
     city = await update_city_and_return(client=client, slug=slug, document=document)
     if not city:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=f"City {slug} not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"City {slug} was not found"
         )
     return city
 
@@ -109,6 +113,7 @@ async def update_city(
     "/{slug}",
     response_model=ViewCity,
     response_description="Delete city",
+    responses=ADDITIONAL_NOT_FOUND_SCHEMA,
 )
 async def delete_city(
     slug: str = Path(..., min_length=1),
@@ -117,7 +122,7 @@ async def delete_city(
     city = await delete_city_and_return(client=client, slug=slug)
     if not city:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=f"City {slug} not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"City {slug} was not found"
         )
     return city
 
