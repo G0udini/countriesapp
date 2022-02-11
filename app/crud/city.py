@@ -1,6 +1,5 @@
 import pymongo
 from slugify import slugify
-from bson import ObjectId
 
 from ..db.base import AsyncIOMotorClient
 from ..models.city import ViewCity, UpdateCity
