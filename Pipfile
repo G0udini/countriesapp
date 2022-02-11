@@ -8,7 +8,6 @@ uvicorn = "*"
 fastapi = "*"
 pydantic = "*"
 motor = "*"
-black = "*"
 python-multipart = "*"
 python-jose = {extras = ["cryptography"], version = "*"}
 passlib = {extras = ["bcrypt"], version = "*"}
@@ -18,6 +17,8 @@ pytest = "*"
 requests = "*"
 
 [dev-packages]
+flake8 = "*"
+black = "*"
 
 [requires]
 python_version = "3.10"
