@@ -10,7 +10,13 @@ from app.models.city import ViewCity
 
 test_city = {
     "name": "Tomsk",
-    "description": "Moscow is the capital of Russia, its political, economic, and cultural centre.This is the most populated city in Russia and Europe.For many people from Russia and other countries the capital of Russia is a city of magnificent opportunities.",
+    "description": (
+        "Moscow is the capital of Russia, its political, "
+        "economic, and cultural centre."
+        "This is the most populated city in Russia and Europe."
+        "For many people from Russia and other countries the capital of Russia "
+        "is a city of magnificent opportunities."
+    ),
     "foundation_year": 1147,
     "time_zone": 3,
     "square": 2561.5,
@@ -20,6 +26,12 @@ test_city = {
     "sights": [],
     "reviews": [],
 }
+corrupted_test_city = {
+    "time_zone": 3,
+    "square": 2561.5,
+    "climate": "continental",
+}
+
 test_city_slug = "tomsk"
 
 
@@ -63,6 +75,14 @@ def test_add_duplicate_city():
         response = client.post("/api1/cities/", json=test_city)
         assert response.status_code == 409
         assert response.json()["detail"] == f"City '{test_city['name']}' already exists"
+
+
+def test_add_city_without_required():
+    with TestClient(app) as client:
+        response = client.post("/api1/cities/", json=corrupted_test_city)
+        assert response.status_code == 422
+        assert response.json()["detail"][0]["msg"] == "field required"
+        assert response.json()["detail"][1]["msg"] == "field required"
 
 
 def test_get_city():

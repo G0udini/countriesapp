@@ -7,9 +7,12 @@ SIGHT_EXAMPLE = {
     "name": "Red Square",
     "location": ["55°45N", "37°37E"],
     "description": (
-        "Red Square is the main square of Moscow and the most visited place in the capital of Russia."
-        "The most famous Moscow sights, such as the Moscow Kremlin and St. Basil's Cathedral are located near Red Square."
-        "The square is located in the city centre, along of the Kremlin eastern wall. Currently, it is a pedestrian area."
+        "Red Square is the main square of Moscow and the most visited "
+        "place in the capital of Russia."
+        "The most famous Moscow sights, such as the Moscow Kremlin and "
+        "St. Basil's Cathedral are located near Red Square."
+        "The square is located in the city centre, along of the Kremlin eastern wall. "
+        "Currently, it is a pedestrian area."
         "Red Square of Moscow is included in the UNESCO World Heritage Sites list."
     ),
     "visited": 10,
@@ -25,7 +28,8 @@ CITY_EXAMPLE = {
     "description": (
         "Moscow is the capital of Russia, its political, economic, and cultural centre."
         "This is the most populated city in Russia and Europe."
-        "For many people from Russia and other countries the capital of Russia is a city of magnificent opportunities."
+        "For many people from Russia and other countries the capital of "
+        "Russia is a city of magnificent opportunities."
     ),
     "foundation_year": 1147,
     "time_zone": 3,
@@ -92,9 +96,9 @@ class DBRequiredMixin(BaseModel):
 
 
 class BaseSight(BaseModel):
-    name: str | None = None
-    description: str | None = None
-    locatoin: list[str, str] | None = None
+    name: str | None
+    description: str | None
+    locatoin: list[str, str] | None
     visited: int = 0
 
 
@@ -109,13 +113,13 @@ class FullSight(DBRequiredMixin, DBModelMixin, BaseSight):
 
 
 class BaseCity(BaseModel):
-    name: str | None = None
-    description: str | None = None
-    foundation_year: int | None = None
-    time_zone: int | None = None
-    square: float | None = None
-    climate: str | None = None
-    rating: float | None = Field(None, ge=0, le=5)
+    name: str | None
+    description: str | None
+    foundation_year: int | None
+    time_zone: int = 0
+    square: float | None
+    climate: str | None
+    rating: float = Field(0, ge=0, le=5)
     number_of_scores: int = 0
     sights: list[FullSight] = []
     reviews: list[str] = []
