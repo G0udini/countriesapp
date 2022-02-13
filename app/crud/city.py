@@ -1,18 +1,18 @@
 import pymongo
 from slugify import slugify
 
-from ..db.base import AsyncIOMotorClient
+from motor.motor_asyncio import AsyncIOMotorCollection
 from ..models.city import ViewCity, UpdateCity
 
 
 async def get_all_cities(
-    client: AsyncIOMotorClient,
+    collection: AsyncIOMotorCollection,
     limit: int,
     skip: int,
     search: str | None,
 ) -> list:
     if search:
-        return await client.find(
+        return await collection.find(
             {
                 "$or": [
                     {"name": {"$regex": search, "$options": "i"}},
@@ -21,44 +21,48 @@ async def get_all_cities(
             },
             skip=skip,
         ).to_list(length=limit)
-    return await client.find(skip=skip).to_list(length=limit)
+    return await collection.find(skip=skip).to_list(length=limit)
 
 
-async def get_city_by_slug(client: AsyncIOMotorClient, slug: str) -> dict | None:
-    return await client.find_one({"slug": slug})
+async def get_city_by_slug(
+    collection: AsyncIOMotorCollection, slug: str
+) -> dict | None:
+    return await collection.find_one({"slug": slug})
 
 
 async def insert_city_and_return(
-    client: AsyncIOMotorClient, document: ViewCity
+    collection: AsyncIOMotorCollection, document: ViewCity
 ) -> dict:
     city_doc = document.dict()
     city_doc["slug"] = slugify(city_doc["name"])
-    await client.insert_one(city_doc)
+    await collection.insert_one(city_doc)
     return city_doc
 
 
 async def update_city_and_return(
-    client: AsyncIOMotorClient,
+    collection: AsyncIOMotorCollection,
     slug: str,
     document: UpdateCity,
 ) -> dict | None:
     city_doc = document.dict(exclude_unset=True)
     if "name" in city_doc:
         city_doc["slug"] = slugify(city_doc["name"])
-    return await client.find_one_and_update(
+    return await collection.find_one_and_update(
         {"slug": slug}, {"$set": city_doc}, return_document=pymongo.ReturnDocument.AFTER
     )
 
 
-async def delete_city_and_return(client: AsyncIOMotorClient, slug: str) -> dict | None:
-    return await client.find_one_and_delete({"slug": slug})
+async def delete_city_and_return(
+    collection: AsyncIOMotorCollection, slug: str
+) -> dict | None:
+    return await collection.find_one_and_delete({"slug": slug})
 
 
 async def get_cities_by_rating(
-    client: AsyncIOMotorClient, limit: int, skip: int
+    collection: AsyncIOMotorCollection, limit: int, skip: int
 ) -> list[dict]:
     return (
-        await client.find()
+        await collection.find()
         .sort("rating", pymongo.DESCENDING)
         .skip(skip)
         .to_list(length=limit)
