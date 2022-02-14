@@ -13,11 +13,11 @@ python-jose = {extras = ["cryptography"], version = "*"}
 passlib = {extras = ["bcrypt"], version = "*"}
 pymongo = {extras = ["srv"], version = "*"}
 python-slugify = "*"
-pytest = "*"
-requests = "*"
 email-validator = "*"
 
 [dev-packages]
+pytest = "*"
+requests = "*"
 flake8 = "*"
 black = "*"
 

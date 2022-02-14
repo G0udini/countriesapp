@@ -9,6 +9,7 @@ __pycache__/
 # Custom 
 .vscode
 sqlite3.db
+Pipfile.lock
 
 # Distribution / packaging
 .Python
