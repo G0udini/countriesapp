@@ -1,8 +1,9 @@
+import pymongo
 from motor.motor_asyncio import AsyncIOMotorCollection
 from slugify import slugify
 from pymongo.errors import DuplicateKeyError
 
-from ..models.sight import ViewSight
+from ..models.sight import ViewSight, UpdateSight
 from .city import get_city_by_slug
 
 

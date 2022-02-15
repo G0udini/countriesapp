@@ -10,10 +10,18 @@ from fastapi import (
 from motor.motor_asyncio import AsyncIOMotorCollection
 from pymongo.errors import DuplicateKeyError
 
-from ....crud.sight import get_sights_by_city_slug, insert_sight_and_return
 from ....db.dependencies import get_mongodb_conn_for_city
-from ....models.sight import ViewSight
-from ....models.shortcuts import ADDITIONAL_CONFLICT_SIGHT_SCHEMA
+from ....models.sight import ViewSight, UpdateSight
+from ....models.shortcuts import (
+    ADDITIONAL_CONFLICT_SIGHT_SCHEMA,
+    ADDITIONAL_NOT_FOUND_SIGHT_SCHEMA,
+)
+from ....crud.sight import (
+    get_sights_by_city_slug,
+    insert_sight_and_return,
+    get_sight_and_return,
+    update_sight_and_return,
+)
 
 
 router = APIRouter(
@@ -66,23 +74,33 @@ async def post_sight(
     "/{city}/sight/{sight}",
     response_model=ViewSight,
     response_description="Get sight",
-    # responses=ADDITIONAL_CONFLICT_CITY_SCHEMA,
+    responses=ADDITIONAL_NOT_FOUND_SIGHT_SCHEMA,
 )
 async def get_sight(
-    slug: str = Path(..., min_length=1),
+    city: str = Path(..., min_length=1),
     sight: str = Path(..., min_length=1),
     collection: AsyncIOMotorCollection = Depends(get_mongodb_conn_for_city),
 ):
-    return {"hello here"}
+    if returned_sight := await get_sight_and_return(
+        collection=collection, slug=city, sight=sight
+    ):
+        return returned_sight
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"Sight '{sight}' was not found",
+    )
 
 
 @router.put("/{city}/sight/{sight}")
 async def update_sight(
-    slug: str = Path(..., min_length=1),
+    city: str = Path(..., min_length=1),
     sight: str = Path(..., min_length=1),
+    document: UpdateSight = Body(...),
     collection: AsyncIOMotorCollection = Depends(get_mongodb_conn_for_city),
 ):
-    return {"hello here"}
+    return await update_sight_and_return(
+        collection=collection, slug=city, sight=sight, document=document
+    )
 
 
 @router.delete("/{city}/sight/{sight}")

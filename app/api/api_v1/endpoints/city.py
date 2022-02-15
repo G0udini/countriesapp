@@ -78,12 +78,11 @@ async def get_city(
     slug: str = Path(..., min_length=1),
     collection: AsyncIOMotorCollection = Depends(get_mongodb_conn_for_city),
 ):
-    city = await get_city_by_slug(collection=collection, slug=slug)
-    if not city:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=f"City {slug} was not found"
-        )
-    return city
+    if city := await get_city_by_slug(collection=collection, slug=slug):
+        return city
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND, detail=f"City '{slug}' was not found"
+    )
 
 
 @router.put(
@@ -97,14 +96,13 @@ async def update_city(
     document: UpdateCity = Body(...),
     collection: AsyncIOMotorCollection = Depends(get_mongodb_conn_for_city),
 ):
-    city = await update_city_and_return(
+    if city := await update_city_and_return(
         collection=collection, slug=slug, document=document
+    ):
+        return city
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND, detail=f"City '{slug}' was not found"
     )
-    if not city:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=f"City {slug} was not found"
-        )
-    return city
 
 
 @router.delete(
@@ -117,12 +115,11 @@ async def delete_city(
     slug: str = Path(..., min_length=1),
     collection: AsyncIOMotorCollection = Depends(get_mongodb_conn_for_city),
 ):
-    city = await delete_city_and_return(collection=collection, slug=slug)
-    if not city:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=f"City {slug} was not found"
-        )
-    return city
+    if city := await delete_city_and_return(collection=collection, slug=slug):
+        return city
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND, detail=f"City '{slug}' was not found"
+    )
 
 
 @router.get(
