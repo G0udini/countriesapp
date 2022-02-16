@@ -21,6 +21,7 @@ from ....crud.sight import (
     insert_sight_and_return,
     get_sight_and_return,
     update_sight_and_return,
+    delete_sight_and_return,
 )
 
 
@@ -82,7 +83,7 @@ async def get_sight(
     collection: AsyncIOMotorCollection = Depends(get_mongodb_conn_for_city),
 ):
     if returned_sight := await get_sight_and_return(
-        collection=collection, slug=city, sight=sight
+        collection=collection, city_slug=city, sight_slug=sight
     ):
         return returned_sight
     raise HTTPException(
@@ -91,22 +92,50 @@ async def get_sight(
     )
 
 
-@router.put("/{city}/sight/{sight}")
+@router.put(
+    "/{city}/sight/{sight}",
+    response_model=ViewSight,
+    response_description="Update sight",
+    responses={**ADDITIONAL_NOT_FOUND_SIGHT_SCHEMA, **ADDITIONAL_CONFLICT_SIGHT_SCHEMA},
+)
 async def update_sight(
     city: str = Path(..., min_length=1),
     sight: str = Path(..., min_length=1),
     document: UpdateSight = Body(...),
     collection: AsyncIOMotorCollection = Depends(get_mongodb_conn_for_city),
 ):
-    return await update_sight_and_return(
-        collection=collection, slug=city, sight=sight, document=document
-    )
+    try:
+        if resulted_sight := await update_sight_and_return(
+            collection=collection, city_slug=city, sight_slug=sight, document=document
+        ):
+            return resulted_sight
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"City '{sight}' was not found",
+        )
+    except DuplicateKeyError as e:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"City '{document.name}' already exists",
+        ) from e
 
 
-@router.delete("/{city}/sight/{sight}")
+@router.delete(
+    "/{city}/sight/{sight}",
+    response_model=ViewSight,
+    response_description="Delete sight",
+    responses=ADDITIONAL_NOT_FOUND_SIGHT_SCHEMA,
+)
 async def delete_sight(
-    slug: str = Path(..., min_length=1),
+    city: str = Path(..., min_length=1),
     sight: str = Path(..., min_length=1),
     collection: AsyncIOMotorCollection = Depends(get_mongodb_conn_for_city),
 ):
-    return {"hello here"}
+    if returned_sight := await delete_sight_and_return(
+        collection=collection, city_slug=city, sight_slug=sight
+    ):
+        return returned_sight
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"Sight '{sight}' was not found",
+    )

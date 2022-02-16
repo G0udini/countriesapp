@@ -35,7 +35,8 @@ async def insert_city_and_return(
 ) -> dict:
     city_doc = document.dict()
     city_doc["slug"] = slugify(city_doc["name"])
-    await collection.insert_one(city_doc)
+    result = await collection.insert_one(city_doc)
+    city_doc.update({"_id": result.inserted_id})
     return city_doc
 
 
