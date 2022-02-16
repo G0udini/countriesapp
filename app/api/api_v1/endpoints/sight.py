@@ -32,7 +32,7 @@ router = APIRouter(
 
 
 @router.get(
-    "/{city}/sight/",
+    "/{city}/sights/",
     response_model=list[ViewSight],
     response_description="List all corresponding sights",
 )
@@ -48,7 +48,7 @@ async def list_sights(
 
 
 @router.post(
-    "/{city}/sight/",
+    "/{city}/sights/",
     response_model=ViewSight,
     status_code=status.HTTP_201_CREATED,
     response_description="Add sight to city",
@@ -111,12 +111,12 @@ async def update_sight(
             return resulted_sight
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"City '{sight}' was not found",
+            detail=f"Sight '{sight}' was not found",
         )
     except DuplicateKeyError as e:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail=f"City '{document.name}' already exists",
+            detail=f"Sight '{document.name}' already exists",
         ) from e
 
 
