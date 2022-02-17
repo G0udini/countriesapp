@@ -38,7 +38,7 @@ def test_list_all_sights_with_query(client):
 
 
 def test_add_sight(client):
-    response = client.post("/api1/cities/moscow/sights/", json=test_sight)
+    response = client.post("/api1/cities/moscow/sights", json=test_sight)
     data = ViewSight(**response.json())
     assert response.status_code == 201
     assert data.name == test_sight["name"]
@@ -54,13 +54,13 @@ def test_list_sights_after_adding(client):
 
 
 def test_add_duplicate_sight(client):
-    response = client.post("/api1/cities/moscow/sights/", json=test_sight)
+    response = client.post("/api1/cities/moscow/sights", json=test_sight)
     assert response.status_code == 409
     assert response.json()["detail"] == f"Sight '{test_sight['name']}' already exists"
 
 
 def test_add_sight_without_required(client):
-    response = client.post("/api1/cities/moscow/sights/", json=corrupted_test_sight)
+    response = client.post("/api1/cities/moscow/sights", json=corrupted_test_sight)
     assert response.status_code == 422
     assert response.json()["detail"][0]["msg"] == "field required"
     assert response.json()["detail"][1]["msg"] == "field required"

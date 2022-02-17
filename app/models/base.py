@@ -14,8 +14,11 @@ class ObjectIdStr(str):
         return str(val)
 
 
-class DBModelMixin(BaseModel):
+class DBIdMixin(BaseModel):
     id: ObjectIdStr = Field(alias="_id")
+
+
+class DBModelMixin(DBIdMixin, BaseModel):
     slug: str
 
 

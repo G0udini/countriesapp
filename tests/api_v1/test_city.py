@@ -108,7 +108,7 @@ def test_delete_nonexistent_city(client):
 
 
 def test_get_city_rating(client):
-    response = client.get("/api1/cities/top/")
+    response = client.get("/api1/cities/top")
     data = [ViewCity(**city) for city in response.json()]
     assert response.status_code == 200
     assert data[0].name == "Saint-Petersburg"

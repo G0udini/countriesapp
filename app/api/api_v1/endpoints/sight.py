@@ -32,7 +32,7 @@ router = APIRouter(
 
 
 @router.get(
-    "/{city}/sights/",
+    "/{city}/sights",
     response_model=list[ViewSight],
     response_description="List all corresponding sights",
 )
@@ -48,7 +48,7 @@ async def list_sights(
 
 
 @router.post(
-    "/{city}/sights/",
+    "/{city}/sights",
     response_model=ViewSight,
     status_code=status.HTTP_201_CREATED,
     response_description="Add sight to city",

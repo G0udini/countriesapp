@@ -69,6 +69,19 @@ async def add_city(
 
 
 @router.get(
+    "/top",
+    response_model=list[ViewCity],
+    response_description="Get the most rated cities",
+)
+async def get_city_rating(
+    limit: int = Query(20, gt=0),
+    skip: int = Query(0, ge=0),
+    collection: AsyncIOMotorCollection = Depends(get_mongodb_conn_for_city),
+):
+    return await get_cities_by_rating(collection=collection, limit=limit, skip=skip)
+
+
+@router.get(
     "/{slug}",
     response_model=ViewCity,
     response_description="Get city",
@@ -126,16 +139,3 @@ async def delete_city(
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND, detail=f"City '{slug}' was not found"
     )
-
-
-@router.get(
-    "/top/",
-    response_model=list[ViewCity],
-    response_description="Get the most rated cities",
-)
-async def get_city_rating(
-    limit: int = Query(20, gt=0),
-    skip: int = Query(0, ge=0),
-    collection: AsyncIOMotorCollection = Depends(get_mongodb_conn_for_city),
-):
-    return await get_cities_by_rating(collection=collection, limit=limit, skip=skip)

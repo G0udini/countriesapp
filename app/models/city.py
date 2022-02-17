@@ -35,7 +35,7 @@ class ViewCityConfig(BaseCityConfig):
     pass
 
 
-class FullCityConfig(BaseCityConfig):
+class FullCityConfig:
     allow_population_by_field_name = True
     schema_extra = {"example": FULL_CITY_EXAMPLE}
 

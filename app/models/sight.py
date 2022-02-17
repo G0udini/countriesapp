@@ -32,7 +32,7 @@ class ViewSightConfig(BaseSightConfig):
     pass
 
 
-class FullSightConfig(BaseSightConfig):
+class FullSightConfig:
     allow_population_by_field_name = True
     schema_extra = {"example": FULL_SIGHT_EXAMPLE}
 
