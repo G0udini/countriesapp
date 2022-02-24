@@ -5,16 +5,30 @@ from ..core.config import (
     DATABASE_NAME,
     CITY_COLLECTION,
     CITY_TEST_COLLECTION,
+    USER_COLLECTION,
+    USER_TEST_COLLECTION,
 )
 
-collections = [CITY_COLLECTION, CITY_TEST_COLLECTION]
+
+city_collections = [CITY_COLLECTION, CITY_TEST_COLLECTION]
+user_collections = [USER_COLLECTION, USER_TEST_COLLECTION]
+unique_indexes = {
+    "slug": city_collections,
+    "username": user_collections,
+    "email": user_collections,
+}
+
+
+async def create_indexes(connection: AsyncIOMotorDatabase):
+    for field, collections in unique_indexes.items():
+        for collection_name in collections:
+            collection = connection[collection_name]
+            if f"{field}_1" not in await collection.index_information():
+                await collection.create_index(field, unique=True)
 
 
 async def create_connection() -> list[AsyncIOMotorClient, AsyncIOMotorDatabase]:
     client = AsyncIOMotorClient(DATABASE_URL)
     conn = client[DATABASE_NAME]
-    for collection in collections:
-        col_tmp = conn[collection]
-        if "slug_1" not in await col_tmp.index_information():
-            await col_tmp.create_index("slug", unique=True)
+    await create_indexes(conn)
     return client, conn
