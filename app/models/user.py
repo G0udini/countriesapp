@@ -42,27 +42,25 @@ class FullUserConfig:
 
 class BaseUser(BaseModel):
     username: str
+
+
+class LoginUser(BaseUser):
     password: str
 
+    class Config(LoginUserConfig):
+        pass
 
-class Register(BaseUser):
+
+class Register(LoginUser):
     password2: str
 
     class Config(RegisterUserConfig):
         pass
 
 
-class LoginUser(BaseUser):
-    class Config(LoginUserConfig):
-        pass
-
-
 class ViewUser(BaseUser):
     email: EmailStr
-    active: bool
-    staff: bool
     visited_cities: list[str]
-    reviews: list[str]
     like_to_visit: list[str]
 
     class Config(ViewUserConfig):
@@ -70,5 +68,8 @@ class ViewUser(BaseUser):
 
 
 class FullUser(DBIdMixin, ViewUser):
+    active: bool = True
+    staff: bool = False
+
     class Config(FullUserConfig):
         pass

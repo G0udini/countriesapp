@@ -38,3 +38,14 @@ ADDITIONAL_CONFLICT_SIGHT_SCHEMA = {
         },
     }
 }
+
+ADDITIONAL_UNAUTHORIZED_SCHEMA = {
+    401: {
+        "description": "Unauthorized",
+        "content": {
+            "application/json": {
+                "example": {"detail": "Incorrect username or password"}
+            }
+        },
+    }
+}
