@@ -49,3 +49,21 @@ ADDITIONAL_UNAUTHORIZED_SCHEMA = {
         },
     }
 }
+
+ADDITIONAL_CONFLICT_USER_SCHEMA = {
+    409: {
+        "description": "User already exists",
+        "content": {
+            "application/json": {"example": {"detail": "User 'Ruslan' already exists"}}
+        },
+    }
+}
+
+ADDITIONAL_SUCCESSFUL_CREATED_USER_SCHEMA = {
+    200: {
+        "description": "Successfully",
+        "content": {
+            "application/json": {"example": {"detail": "User successfully created"}}
+        },
+    }
+}

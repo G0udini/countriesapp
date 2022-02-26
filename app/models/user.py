@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, validator
 from .base import DBIdMixin
 
 BASE_USER_EXAMPLE = {
@@ -43,6 +43,11 @@ class FullUserConfig:
 class BaseUser(BaseModel):
     username: str
 
+    @validator("username")
+    def username_alphanumeric(cls, v):
+        assert v.isalnum(), "must be alphanumeric"
+        return v
+
 
 class LoginUser(BaseUser):
     password: str
@@ -51,8 +56,14 @@ class LoginUser(BaseUser):
         pass
 
 
-class Register(LoginUser):
+class RegisterUser(LoginUser):
     password2: str
+
+    @validator("password2")
+    def passwords_match(cls, v, values, **kwargs):
+        if "password" in values and v != values["password"]:
+            raise ValueError("passwords do not match")
+        return v
 
     class Config(RegisterUserConfig):
         pass

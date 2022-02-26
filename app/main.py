@@ -2,10 +2,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .db.base import create_connection
-from .api.api_v1.api import router
+from .api.api_v1.api import router as router_v1
 
 app = FastAPI()
-app.include_router(router)
+app.include_router(router_v1)
 
 
 app.add_middleware(

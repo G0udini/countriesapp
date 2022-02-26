@@ -24,6 +24,10 @@ def verify_password(password, hashed_password):
     return ctx.verify(password, hashed_password)
 
 
+def get_password_hash(password):
+    return ctx.hash(password)
+
+
 def create_access_token(data: dict):
     expires_delta = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     additional = data.copy()
