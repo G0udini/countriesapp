@@ -1,20 +1,25 @@
-from fastapi import APIRouter, Body, Depends, HTTPException, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Path, status
 from fastapi.security import OAuth2PasswordRequestForm
 from motor.motor_asyncio import AsyncIOMotorCollection
 from pymongo.errors import DuplicateKeyError
 
 from ....core.security import authenticate_user, create_access_token, get_password_hash
+from ....core.permissions import is_staff
 from ....db.dependencies import (
     get_current_active_user,
     get_mongodb_conn_for_user,
 )
 from ....models.token import Token
-from ....models.user import ViewUser, RegisterUser
-from ....crud.user import create_user
+from ....models.user import FullUser, ViewUser, RegisterUser
+from ....crud.user import create_user, get_user_by_username
 from ....models.shortcuts import (
     ADDITIONAL_CONFLICT_USER_SCHEMA,
-    ADDITIONAL_UNAUTHORIZED_SCHEMA,
+    ADDITIONAL_CONFLICT_SIGHT_SCHEMA,
+    ADDITIONAL_UNAUTHORIZED_INCORRECT_SCHEMA,
     ADDITIONAL_SUCCESSFUL_CREATED_USER_SCHEMA,
+    ADDITIONAL_NOT_FOUND_USER_SCHEMA,
+    ADDITIONAL_PERMISSION_SCHEMA,
+    ADDITIONAL_INACTIVE_USER_SCHEMA,
 )
 
 router = APIRouter(
@@ -27,7 +32,7 @@ router = APIRouter(
     "/token",
     response_model=Token,
     response_description="Get token",
-    responses=ADDITIONAL_UNAUTHORIZED_SCHEMA,
+    responses=ADDITIONAL_CONFLICT_SIGHT_SCHEMA,
 )
 async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
@@ -58,9 +63,10 @@ async def register_user(
     form: RegisterUser = Body(...),
     collection: AsyncIOMotorCollection = Depends(get_mongodb_conn_for_user),
 ):
-    form.password = get_password_hash(form.password)
+    user = FullUser(**form.dict())
+    user.password = get_password_hash(user.password)
     try:
-        await create_user(collection=collection, form=form)
+        await create_user(collection=collection, user=user)
     except DuplicateKeyError as e:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -69,9 +75,52 @@ async def register_user(
     return {"detail": "User successfully created"}
 
 
-@router.get("/users/me/", response_model=ViewUser)
-async def read_users_me(current_user: dict = Depends(get_current_active_user)):
-    return current_user
+@router.get(
+    "/users/{username}",
+    response_description="Get user profile",
+    response_model=ViewUser,
+    responses=ADDITIONAL_NOT_FOUND_USER_SCHEMA,
+)
+async def get_user_profile(
+    collection: AsyncIOMotorCollection = Depends(get_mongodb_conn_for_user),
+    username: str = Path(..., min_length=1),
+):
+    if user := await get_user_by_username(collection=collection, username=username):
+        return user
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND, detail=f"User '{username}' was not found"
+    )
+
+
+@router.put(
+    "/users/{username}",
+    response_description="Update user profile",
+    response_model=ViewUser,
+    responses={
+        **ADDITIONAL_NOT_FOUND_USER_SCHEMA,
+        **ADDITIONAL_UNAUTHORIZED_INCORRECT_SCHEMA,
+        **ADDITIONAL_PERMISSION_SCHEMA,
+        **ADDITIONAL_INACTIVE_USER_SCHEMA,
+    },
+)
+async def udate_user_profile(
+    collection: AsyncIOMotorCollection = Depends(get_mongodb_conn_for_user),
+    current_user: dict = Depends(get_current_active_user),
+    username: str = Path(..., min_length=1),
+    document: FullUser = Body(...),
+):
+    user = await get_user_by_username(collection=collection, username=username)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User '{username}' was not found",
+        )
+    if current_user["username"] != username:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions"
+        )
+    if is_staff(current_user):
+        pass
 
 
 # @app.get("/users/me/items/")

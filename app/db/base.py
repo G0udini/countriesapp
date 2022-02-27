@@ -15,7 +15,6 @@ user_collections = [USER_COLLECTION, USER_TEST_COLLECTION]
 unique_indexes = {
     "slug": city_collections,
     "username": user_collections,
-    "email": user_collections,
 }
 
 

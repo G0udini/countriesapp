@@ -10,13 +10,17 @@ REGISTER_USER_EXAMPLE = {"password2": "123456"} | BASE_USER_EXAMPLE
 
 VIEW_USER_EXAMPLE = {
     "email": "ruslan@yandex.ru",
-    "active": True,
-    "staff": False,
     "visited_cities": [],
     "like_to_visit": [],
-} | BASE_USER_EXAMPLE
+}
 
-FULL_USER_EXAMPLE = {"_id": "61f9a0a8485011106d5aa394"} | VIEW_USER_EXAMPLE
+FULL_USER_EXAMPLE = {
+    "active": True,
+    "staff": False,
+} | VIEW_USER_EXAMPLE
+
+
+FULL_DB_USER_EXAMPLE = {"_id": "61f9a0a8485011106d5aa394"} | FULL_USER_EXAMPLE
 
 
 class BaseUserConfig:
@@ -36,8 +40,12 @@ class ViewUserConfig:
 
 
 class FullUserConfig:
-    allow_population_by_field_name = True
     schema_extra = {"example": FULL_USER_EXAMPLE}
+
+
+class FullDBUserConfig:
+    allow_population_by_field_name = True
+    schema_extra = {"example": FULL_DB_USER_EXAMPLE}
 
 
 class BaseUser(BaseModel):
@@ -70,17 +78,22 @@ class RegisterUser(LoginUser):
 
 
 class ViewUser(BaseUser):
-    email: EmailStr
-    visited_cities: list[str]
-    like_to_visit: list[str]
+    email: EmailStr = None
+    visited_cities: list[str] = []
+    like_to_visit: list[str] = []
 
     class Config(ViewUserConfig):
         pass
 
 
-class FullUser(DBIdMixin, ViewUser):
+class FullUser(LoginUser, ViewUser):
     active: bool = True
     staff: bool = False
 
     class Config(FullUserConfig):
+        pass
+
+
+class FullDBUser(DBIdMixin, FullUser):
+    class Config(FullDBUserConfig):
         pass

@@ -1,6 +1,6 @@
 from motor.motor_asyncio import AsyncIOMotorCollection
 
-from ..models.user import RegisterUser
+from ..models.user import FullUser
 
 
 async def get_user_by_username(
@@ -11,9 +11,6 @@ async def get_user_by_username(
 
 
 async def create_user(
-    collection: AsyncIOMotorCollection, form: RegisterUser
+    collection: AsyncIOMotorCollection, user: FullUser
 ) -> dict | None:
-    user = form.dict()
-    del user["password2"]
-    print(user)
-    return await collection.insert_one(user)
+    return await collection.insert_one(user.dict())

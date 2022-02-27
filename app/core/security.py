@@ -1,12 +1,11 @@
 from datetime import datetime, timedelta
 from motor.motor_asyncio import AsyncIOMotorCollection
-from fastapi import Depends, HTTPException, status
+from fastapi import HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
 from .config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
-from ..models.token import TokenData
 from ..crud.user import get_user_by_username
 
 CREDENTIALS_EXCEPTION = HTTPException(
@@ -40,7 +39,7 @@ async def authenticate_user(
     collection: AsyncIOMotorCollection, username: str, password: str
 ):
     user = await get_user_by_username(collection=collection, username=username)
-    if user and verify_password(password, user["password"]):
+    if user and user["active"] and verify_password(password, user["password"]):
         return user
 
 
