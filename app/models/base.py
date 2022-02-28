@@ -25,3 +25,7 @@ class DBModelMixin(DBIdMixin, BaseModel):
 class DBRequiredNameMixin(BaseModel):
     name: str = Field(...)
     description: str = Field(...)
+
+
+class PasswordMixin(BaseModel):
+    password: str

@@ -10,8 +10,8 @@ from ....db.dependencies import (
     get_mongodb_conn_for_user,
 )
 from ....models.token import Token
-from ....models.user import FullUser, ViewUser, RegisterUser
-from ....crud.user import create_user, get_user_by_username
+from ....models.user import FullUser, UpdateUser, ViewUser, RegisterUser
+from ....crud.user import create_user, get_user_by_username, update_user_and_return
 from ....models.shortcuts import (
     ADDITIONAL_CONFLICT_USER_SCHEMA,
     ADDITIONAL_CONFLICT_SIGHT_SCHEMA,
@@ -107,7 +107,7 @@ async def udate_user_profile(
     collection: AsyncIOMotorCollection = Depends(get_mongodb_conn_for_user),
     current_user: dict = Depends(get_current_active_user),
     username: str = Path(..., min_length=1),
-    document: FullUser = Body(...),
+    document: UpdateUser = Body(...),
 ):
     user = await get_user_by_username(collection=collection, username=username)
     if not user:
@@ -119,10 +119,6 @@ async def udate_user_profile(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions"
         )
-    if is_staff(current_user):
-        pass
-
-
-# @app.get("/users/me/items/")
-# async def read_own_items(current_user: User = Depends(get_current_active_user)):
-#     return [{"item_id": "Foo", "owner": current_user.username}]
+    return await update_user_and_return(
+        collection=collection, user=user, document=document
+    )

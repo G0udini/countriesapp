@@ -1,38 +1,47 @@
 from pydantic import BaseModel, EmailStr, validator
-from .base import DBIdMixin
+from .base import DBIdMixin, PasswordMixin
+
 
 BASE_USER_EXAMPLE = {
-    "username": "G0udini",
+    "username": "Ruslan",
+}
+LOGIN_USER_EXAMPLE = BASE_USER_EXAMPLE | {
     "password": "123456",
 }
 
-REGISTER_USER_EXAMPLE = {"password2": "123456"} | BASE_USER_EXAMPLE
+REGISTER_USER_EXAMPLE = {"password2": "123456"} | LOGIN_USER_EXAMPLE
 
-VIEW_USER_EXAMPLE = {
+UPDATE_USER_EXAMPLE = {
     "email": "ruslan@yandex.ru",
     "visited_cities": [],
     "like_to_visit": [],
 }
 
-FULL_USER_EXAMPLE = {
-    "active": True,
-    "staff": False,
-} | VIEW_USER_EXAMPLE
+VIEW_USER_EXAMPLE = BASE_USER_EXAMPLE | UPDATE_USER_EXAMPLE
 
+FULL_USER_EXAMPLE = (
+    LOGIN_USER_EXAMPLE
+    | UPDATE_USER_EXAMPLE
+    | {
+        "active": True,
+        "staff": False,
+    }
+)
 
 FULL_DB_USER_EXAMPLE = {"_id": "61f9a0a8485011106d5aa394"} | FULL_USER_EXAMPLE
 
 
-class BaseUserConfig:
-    schema_extra = {"example": BASE_USER_EXAMPLE}
-
-
-class LoginUserConfig(BaseUserConfig):
-    pass
+# Config Models
+class LoginUserConfig:
+    schema_extra = {"example": LOGIN_USER_EXAMPLE}
 
 
 class RegisterUserConfig:
     schema_extra = {"example": REGISTER_USER_EXAMPLE}
+
+
+class UpdateUserConfig:
+    schema_extra = {"example": UPDATE_USER_EXAMPLE}
 
 
 class ViewUserConfig:
@@ -48,6 +57,7 @@ class FullDBUserConfig:
     schema_extra = {"example": FULL_DB_USER_EXAMPLE}
 
 
+# User Models
 class BaseUser(BaseModel):
     username: str
 
@@ -57,14 +67,12 @@ class BaseUser(BaseModel):
         return v
 
 
-class LoginUser(BaseUser):
-    password: str
-
+class LoginUser(PasswordMixin, BaseUser):
     class Config(LoginUserConfig):
         pass
 
 
-class RegisterUser(LoginUser):
+class RegisterUser(PasswordMixin, BaseUser):
     password2: str
 
     @validator("password2")
@@ -77,16 +85,21 @@ class RegisterUser(LoginUser):
         pass
 
 
-class ViewUser(BaseUser):
+class UpdateUser(BaseModel):
     email: EmailStr = None
     visited_cities: list[str] = []
     like_to_visit: list[str] = []
 
+    class Config(UpdateUserConfig):
+        pass
+
+
+class ViewUser(UpdateUser, BaseUser):
     class Config(ViewUserConfig):
         pass
 
 
-class FullUser(LoginUser, ViewUser):
+class FullUser(UpdateUser, LoginUser):
     active: bool = True
     staff: bool = False
 
